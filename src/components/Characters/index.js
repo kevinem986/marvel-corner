@@ -111,8 +111,10 @@ const Characters = () => {
         </tbody>
         </Table>
     </Row>
-    <Row>
-        <Pagination>{paginationItems()}</Pagination>
+    <Row className="justify-content-center">
+        <Pagination>
+            {paginationItems()}
+        </Pagination>
       </Row>
     </Container>
   );
