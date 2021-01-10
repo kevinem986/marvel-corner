@@ -8,7 +8,7 @@ const HeaderNavbar = () => {
   return (
     <Navbar expand="lg" bg="dark" variant="dark">
     <Navbar.Toggle />
-    <Navbar.Brand href="#home">
+    <Navbar.Brand href="/">
         Marvel Corner
         {/* <Image height="70px" width="300px"  src="marvel-corner-logo.png" /> */}
     </Navbar.Brand>
