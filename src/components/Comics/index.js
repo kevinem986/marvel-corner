@@ -8,6 +8,7 @@ import Image from "react-bootstrap/Image";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { Link } from "react-router-dom";
 
 const getComics = gql`
   query getComics($offset: Int, $limit: Int) {
@@ -151,11 +152,21 @@ const Comics = () => {
                     {columnModel.map((col, i) => {
                       return [
                         <td key={i}>
-                          {col.field === "thumbnail" ? (
+                          {/* When field is id (col) redirect to detail */}
+                          {col.field === "id" ? (
+                            <Link to={"/comic/" + rowData[col.field]}>
+                              {rowData[col.field]}
+                            </Link>
+                          ) : // When field is thumbnail set the image (thumbnail) to td
+                          col.field === "thumbnail" ? (
                             <Image
                               height="150px"
                               width="150px"
-                              src={rowData[col.field] === "" ? imageNotFound : rowData[col.field]}
+                              src={
+                                rowData[col.field] === ""
+                                  ? imageNotFound
+                                  : rowData[col.field]
+                              }
                               thumbnail
                             />
                           ) : (

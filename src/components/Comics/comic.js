@@ -11,28 +11,29 @@ import Table from "react-bootstrap/Table";
 import Image from "react-bootstrap/Image";
 import { Link } from "react-router-dom";
 
-const getCharacter = gql`
-  query getCharacter($id: ID!) {
-    character(id: $id) {
-      id
-      name
-      description
-      thumbnail
-      resourceURI
-      comics {
+const getComic = gql`
+query getComic($id: ID!) {  
+    comic (id: $id) {
         id
         title
         description
+        resourceURI
         thumbnail
         issueNumber
         format
-      }
-      stories {
-        id
-        title
-        description
-        thumbnail
-      }
+          characters {
+              id
+            name
+            description
+            thumbnail
+            resourceURI       
+            }
+          stories {
+          id
+          title
+          description
+          thumbnail        
+        }
     }
   }
 `;
@@ -40,45 +41,39 @@ const getCharacter = gql`
 const imageNotFound =
   "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
 
-const Character = () => {
+const Comic = () => {
   let { id } = useParams();
 
-  const { loading, error, data } = useQuery(getCharacter, {
+  const { loading, error, data } = useQuery(getComic, {
     variables: { id: id },
   });
 
   if (loading) return <Spinner animation="border" />;
   if (error) return `Error! ${error.message}`;
 
-  const comics = data?.character?.comics || [];
-  const stories = data?.character?.stories || [];
+  console.log(data);
 
-  let columnModelComics = [
+  const characters = data?.comic?.characters || [];
+  const stories = data?.comic?.stories || [];
+
+  let columnModelCharacters = [
     {
-      field: "id",
-      header: "ID",
-    },
-    {
-      field: "thumbnail",
-      header: "Thumbnail",
-    },
-    {
-      field: "title",
-      header: "Title",
-    },
-    {
-      field: "description",
-      header: "Description",
-    },
-    {
-      field: "issueNumber",
-      header: "Issue Number",
-    },
-    {
-      field: "format",
-      header: "Format",
-    },
-  ];
+        field: "id",
+        header: "ID",
+      },
+      {
+        field: "thumbnail",
+        header: "Thumbnail",
+      },
+      {
+        field: "name",
+        header: "Name",
+      },
+      {
+        field: "description",
+        header: "Description",
+      },
+    ];
 
   let columnModelStories = [
     {
@@ -99,7 +94,7 @@ const Character = () => {
     <Container fluid={true}>
       <Row>
         <Col md="4" xs="4">
-          <h4>Character</h4>
+          <h4>Comic</h4>
         </Col>
       </Row>
       <Row>
@@ -108,14 +103,14 @@ const Character = () => {
             <Card.Img
               variant="top"
               src={
-                data?.character?.thumbnail === ""
+                data?.comic?.thumbnail === ""
                   ? imageNotFound
-                  : data?.character?.thumbnail
+                  : data?.comic?.thumbnail
               }
             />
             <Card.Body>
-              <Card.Title>{data?.character?.name}</Card.Title>
-              <Card.Text>{data?.character?.description}</Card.Text>
+              <Card.Title>{data?.comic?.name}</Card.Title>
+              <Card.Text>{data?.comic?.description}</Card.Text>
               <Button variant="danger">Add Favorites</Button>
             </Card.Body>
           </Card>
@@ -125,7 +120,7 @@ const Character = () => {
             <Card>
               <Card.Header>
                 <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                  Related Comic:
+                  Related Character:
                 </Accordion.Toggle>
               </Card.Header>
               <Accordion.Collapse eventKey="0">
@@ -133,21 +128,21 @@ const Character = () => {
                   <Table striped bordered hover variant="ligth">
                     <thead>
                       <tr className="bg-info text-center">
-                        {columnModelComics.map((col, i) => {
+                        {columnModelCharacters.map((col, i) => {
                           return [<th key={i}>{col.header}</th>];
                         })}
                       </tr>
                     </thead>
                     <tbody>
-                      {comics.map((rowData, index) => {
+                      {characters.map((rowData, index) => {
                         return [
                           <tr key={index}>
-                            {columnModelComics.map((col, i) => {
+                            {columnModelCharacters.map((col, i) => {
                               return [
                                 <td key={i}>
                                   {/* When field is id (col) redirect to detail */}
                                   {col.field === "id" ? (
-                                    <Link to={"/comic/" + rowData[col.field]}>
+                                    <Link to={"/character/" + rowData[col.field]}>
                                       {rowData[col.field]}
                                     </Link>
                                   ) : // When field is thumbnail set the image (thumbnail) to td
@@ -237,4 +232,4 @@ const Character = () => {
   );
 };
 
-export default Character;
+export default Comic;
