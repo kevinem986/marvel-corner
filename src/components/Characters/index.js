@@ -9,11 +9,18 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Link } from "react-router-dom";
+import InputGroup from "react-bootstrap/InputGroup";
+import FormControl from "react-bootstrap/FormControl";
 
 const getCharacters = gql`
-  query getCharacters($offset: Int, $limit: Int, $orderDesc: Boolean) {
+  query getCharacters(
+    $offset: Int
+    $limit: Int
+    $orderDesc: Boolean
+    $filterByName: String
+  ) {
     characters(
-      filter: {}
+      filter: { nameStartsWith: $filterByName }
       desc: $orderDesc
       pagination: { offset: $offset, limit: $limit }
     ) {
@@ -37,21 +44,38 @@ const imageNotFound =
 
 const Characters = () => {
   const [orderByNameDesc, setOrderByNameDesc] = useState(false);
+  const [inputName, setInputName] = useState("");
+  let variables = { limit: LIMIT, orderDesc: orderByNameDesc };
+
   useEffect(() => {}, [orderByNameDesc]);
+  useEffect(() => {}, [inputName]);
+
+  if (inputName !== "")
+      variables = {
+        limit: LIMIT,
+        orderDesc: orderByNameDesc,
+        filterByName: inputName,
+      };
+    else variables = { limit: LIMIT, orderDesc: orderByNameDesc };
 
   const { loading, error, data, fetchMore } = useQuery(getCharacters, {
-    variables: { limit: LIMIT, orderDesc: orderByNameDesc },
+    variables: variables,
   });
 
   const characters = data?.characters?.results || [];
 
   const loadMore = () => {
-    fetchMore({
-      variables: {
+    if (inputName !== "")
+      variables = {
         offset: characters.length,
         limit: LIMIT,
         orderDesc: orderByNameDesc,
-      },
+        filterByName: inputName,
+      };
+    else variables = { offset: characters.length, limit: LIMIT, orderDesc: orderByNameDesc };
+
+    fetchMore({
+      variables: variables,
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
 
@@ -105,7 +129,7 @@ const Characters = () => {
         </Col>
       </Row>
       <Row>
-        <Col md="4" xs="4">
+        <Col md="2" xs="2">
           <div>
             <DropdownButton
               id="dropdown-basic-button"
@@ -116,6 +140,20 @@ const Characters = () => {
               <Dropdown.Item eventKey="DESC">DESC</Dropdown.Item>
             </DropdownButton>
           </div>
+        </Col>
+        <Col md="4" xs="4">
+          <InputGroup className="mb-3">
+            <InputGroup.Append>
+              <InputGroup.Text id="basic-addon2">Search by Name</InputGroup.Text>
+            </InputGroup.Append>
+            <FormControl
+              placeholder="Enter the Name"
+              aria-label="Enter the name"
+              aria-describedby="basic-addon2"
+              value={inputName}
+              onChange={(e) => setInputName(e.target.value)}
+            />
+          </InputGroup>
         </Col>
       </Row>
       <Row>
