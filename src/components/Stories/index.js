@@ -6,6 +6,7 @@ import { useQuery } from "@apollo/react-hooks";
 import Spinner from "react-bootstrap/Spinner";
 import Image from "react-bootstrap/Image";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { Link } from "react-router-dom";
 
 const getStories = gql`
   query getStories($offset: Int, $limit: Int) {
@@ -111,11 +112,21 @@ const Stories = () => {
                     {columnModel.map((col, i) => {
                       return [
                         <td key={i}>
-                          {col.field === "thumbnail" ? (
+                          {/* When field is id (col) redirect to detail */}
+                          {col.field === "id" ? (
+                            <Link to={"/story/" + rowData[col.field]}>
+                              {rowData[col.field]}
+                            </Link>
+                          ) : // When field is thumbnail set the image (thumbnail) to td
+                          col.field === "thumbnail" ? (
                             <Image
                               height="150px"
                               width="150px"
-                              src={rowData[col.field] === "" ? imageNotFound : rowData[col.field]}
+                              src={
+                                rowData[col.field] === ""
+                                  ? imageNotFound
+                                  : rowData[col.field]
+                              }
                               thumbnail
                             />
                           ) : (

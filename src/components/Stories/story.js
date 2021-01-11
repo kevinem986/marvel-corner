@@ -11,28 +11,22 @@ import Table from "react-bootstrap/Table";
 import Image from "react-bootstrap/Image";
 import { Link } from "react-router-dom";
 
-const getCharacter = gql`
-  query getCharacter($id: ID!) {
-    character(id: $id) {
-      id
-      name
-      description
-      thumbnail
-      resourceURI
-      comics {
+const getStory = gql`
+query getStory($id: ID!) {  
+    story (id: $id) {
         id
         title
         description
+        resourceURI
         thumbnail
-        issueNumber
-        format
-      }
-      stories {
-        id
-        title
-        description
-        thumbnail
-      }
+          comics {
+              id
+          title
+          description
+          thumbnail
+          issueNumber
+          format        
+            }
     }
   }
 `;
@@ -40,18 +34,17 @@ const getCharacter = gql`
 const imageNotFound =
   "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
 
-const Character = () => {
+const Story = () => {
   let { id } = useParams();
 
-  const { loading, error, data } = useQuery(getCharacter, {
+  const { loading, error, data } = useQuery(getStory, {
     variables: { id: id },
   });
 
   if (loading) return <Spinner animation="border" />;
   if (error) return `Error! ${error.message}`;
 
-  const comics = data?.character?.comics || [];
-  const stories = data?.character?.stories || [];
+  const comics = data?.story?.comics || [];
 
   let columnModelComics = [
     {
@@ -80,26 +73,11 @@ const Character = () => {
     },
   ];
 
-  let columnModelStories = [
-    {
-      field: "id",
-      header: "ID",
-    },
-    {
-      field: "thumbnail",
-      header: "Thumbnail",
-    },
-    {
-      field: "title",
-      header: "Title",
-    },
-  ];
-
   return (
     <Container fluid={true}>
       <Row>
         <Col md="4" xs="4">
-          <h4>Character</h4>
+          <h4>Story</h4>
         </Col>
       </Row>
       <Row>
@@ -108,14 +86,14 @@ const Character = () => {
             <Card.Img
               variant="top"
               src={
-                data?.character?.thumbnail === ""
+                data?.story?.thumbnail === ""
                   ? imageNotFound
-                  : data?.character?.thumbnail
+                  : data?.story?.thumbnail
               }
             />
             <Card.Body>
-              <Card.Title>{data?.character?.name}</Card.Title>
-              <Card.Text>{data?.character?.description}</Card.Text>
+              <Card.Title>{data?.story?.name}</Card.Title>
+              <Card.Text>{data?.story?.description}</Card.Text>
               <Button variant="danger">Add Favorites</Button>
             </Card.Body>
           </Card>
@@ -175,61 +153,7 @@ const Character = () => {
                   </Table>
                 </Card.Body>
               </Accordion.Collapse>
-            </Card>
-            <Card>
-              <Card.Header>
-                <Accordion.Toggle as={Button} variant="link" eventKey="1">
-                  Related Stories:
-                </Accordion.Toggle>
-              </Card.Header>
-              <Accordion.Collapse eventKey="1">
-                <Card.Body>
-                  <Table striped bordered hover variant="ligth">
-                    <thead>
-                      <tr className="bg-info text-center">
-                        {columnModelStories.map((col, i) => {
-                          return [<th key={i}>{col.header}</th>];
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stories.map((rowData, index) => {
-                        return [
-                          <tr key={index}>
-                            {columnModelStories.map((col, i) => {
-                              return [
-                                <td key={i}>
-                                  {/* When field is id (col) redirect to detail */}
-                                  {col.field === "id" ? (
-                                    <Link to={"/story/" + rowData[col.field]}>
-                                      {rowData[col.field]}
-                                    </Link>
-                                  ) : // When field is thumbnail set the image (thumbnail) to td
-                                  col.field === "thumbnail" ? (
-                                    <Image
-                                      height="150px"
-                                      width="150px"
-                                      src={
-                                        rowData[col.field] === ""
-                                          ? imageNotFound
-                                          : rowData[col.field]
-                                      }
-                                      thumbnail
-                                    />
-                                  ) : (
-                                    rowData[col.field]
-                                  )}
-                                </td>,
-                              ];
-                            })}
-                          </tr>,
-                        ];
-                      })}
-                    </tbody>
-                  </Table>
-                </Card.Body>
-              </Accordion.Collapse>
-            </Card>
+            </Card>            
           </Accordion>
         </Col>
       </Row>
@@ -237,4 +161,4 @@ const Character = () => {
   );
 };
 
-export default Character;
+export default Story;

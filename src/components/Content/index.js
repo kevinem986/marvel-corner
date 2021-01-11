@@ -7,6 +7,7 @@ import Stories from "../Stories";
 import Favorites from "../Favorites";
 import Character from "../Characters/character";
 import Comic from "../Comics/comic";
+import Story from "../Stories/story";
 
 const Content = () => {
     
@@ -19,6 +20,7 @@ const Content = () => {
           <Route path="/comics" component={() => <Comics />} /> 
           <Route path="/comic/:id" component={() => <Comic />} />  
           <Route path="/stories" component={() => <Stories />} />
+          <Route path="/story/:id" component={() => <Story />} />
           <Route path="/favorites" component={() => <Favorites />} />
         </Switch>
     </div>

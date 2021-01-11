@@ -12,28 +12,28 @@ import Image from "react-bootstrap/Image";
 import { Link } from "react-router-dom";
 
 const getComic = gql`
-query getComic($id: ID!) {  
-    comic (id: $id) {
+  query getComic($id: ID!) {
+    comic(id: $id) {
+      id
+      title
+      description
+      resourceURI
+      thumbnail
+      issueNumber
+      format
+      characters {
+        id
+        name
+        description
+        thumbnail
+        resourceURI
+      }
+      stories {
         id
         title
         description
-        resourceURI
         thumbnail
-        issueNumber
-        format
-          characters {
-              id
-            name
-            description
-            thumbnail
-            resourceURI       
-            }
-          stories {
-          id
-          title
-          description
-          thumbnail        
-        }
+      }
     }
   }
 `;
@@ -51,44 +51,42 @@ const Comic = () => {
   if (loading) return <Spinner animation="border" />;
   if (error) return `Error! ${error.message}`;
 
-  console.log(data);
-
   const characters = data?.comic?.characters || [];
   const stories = data?.comic?.stories || [];
 
   let columnModelCharacters = [
     {
-        field: "id",
-        header: "ID",
-      },
-      {
-        field: "thumbnail",
-        header: "Thumbnail",
-      },
-      {
-        field: "name",
-        header: "Name",
-      },
-      {
-        field: "description",
-        header: "Description",
-      },
-    ];
+      field: "id",
+      header: "ID",
+    },
+    {
+      field: "thumbnail",
+      header: "Thumbnail",
+    },
+    {
+      field: "name",
+      header: "Name",
+    },
+    {
+      field: "description",
+      header: "Description",
+    },
+  ];
 
   let columnModelStories = [
     {
-        field: "id",
-        header: "ID",
-      },
-      {
-        field: "thumbnail",
-        header: "Thumbnail",
-      },
-      {
-        field: "title",
-        header: "Title",
-      }
-    ];
+      field: "id",
+      header: "ID",
+    },
+    {
+      field: "thumbnail",
+      header: "Thumbnail",
+    },
+    {
+      field: "title",
+      header: "Title",
+    },
+  ];
 
   return (
     <Container fluid={true}>
@@ -142,7 +140,9 @@ const Comic = () => {
                                 <td key={i}>
                                   {/* When field is id (col) redirect to detail */}
                                   {col.field === "id" ? (
-                                    <Link to={"/character/" + rowData[col.field]}>
+                                    <Link
+                                      to={"/character/" + rowData[col.field]}
+                                    >
                                       {rowData[col.field]}
                                     </Link>
                                   ) : // When field is thumbnail set the image (thumbnail) to td
@@ -179,7 +179,7 @@ const Comic = () => {
               </Card.Header>
               <Accordion.Collapse eventKey="1">
                 <Card.Body>
-                <Table striped bordered hover variant="ligth">
+                  <Table striped bordered hover variant="ligth">
                     <thead>
                       <tr className="bg-info text-center">
                         {columnModelStories.map((col, i) => {
