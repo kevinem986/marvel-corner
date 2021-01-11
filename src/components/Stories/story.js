@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Row, Col, Container } from "react-bootstrap";
 import gql from "graphql-tag";
@@ -12,21 +12,21 @@ import Image from "react-bootstrap/Image";
 import { Link } from "react-router-dom";
 
 const getStory = gql`
-query getStory($id: ID!) {  
-    story (id: $id) {
+  query getStory($id: ID!) {
+    story(id: $id) {
+      id
+      title
+      description
+      resourceURI
+      thumbnail
+      comics {
         id
         title
         description
-        resourceURI
         thumbnail
-          comics {
-              id
-          title
-          description
-          thumbnail
-          issueNumber
-          format        
-            }
+        issueNumber
+        format
+      }
     }
   }
 `;
@@ -36,6 +36,18 @@ const imageNotFound =
 
 const Story = () => {
   let { id } = useParams();
+  const [favorite, setFavorite] = useState(false);
+
+  useEffect(() => {
+    let currentStorage = JSON.parse(localStorage.getItem("favoriteStories"));
+
+    if (currentStorage != null && currentStorage.length > 0) {
+      const index = currentStorage.findIndex((x) => x.id === id);
+
+      if (index >= 0) setFavorite(true);
+      else setFavorite(false);
+    }
+  }, []);
 
   const { loading, error, data } = useQuery(getStory, {
     variables: { id: id },
@@ -73,6 +85,33 @@ const Story = () => {
     },
   ];
 
+  const onClickBtn = (e) => {
+    setFavorite(e);
+
+    let newStorage = [];
+    let newArrayStorage = {};
+
+    newArrayStorage.id = id;
+    newArrayStorage.name = data?.story?.title;
+    newArrayStorage.thumbnail =
+      data?.story?.thumbnail === "" ? imageNotFound : data?.story?.thumbnail;
+
+    let currentStorage = JSON.parse(localStorage.getItem("favoriteStories"));
+
+    if (currentStorage != null && currentStorage.length > 0) {
+      const index = currentStorage.findIndex((x) => x.id === id);
+
+      if (index >= 0) currentStorage.splice(index, 1);
+
+      if (e === true) currentStorage.push(newArrayStorage);
+
+      newStorage = currentStorage;
+    } else if (e === true) newStorage.push(newArrayStorage);
+
+    localStorage.removeItem("favoriteStories");
+    localStorage.setItem("favoriteStories", JSON.stringify(newStorage));
+  };
+
   return (
     <Container fluid={true}>
       <Row>
@@ -92,9 +131,22 @@ const Story = () => {
               }
             />
             <Card.Body>
-              <Card.Title>{data?.story?.name}</Card.Title>
+              <Card.Title>{data?.story?.title}</Card.Title>
               <Card.Text>{data?.story?.description}</Card.Text>
-              <Button variant="danger">Add Favorites</Button>
+              <Button
+                variant="danger"
+                onClick={() => onClickBtn(true)}
+                hidden={favorite}
+              >
+                Add Favorites
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => onClickBtn(false)}
+                hidden={!favorite}
+              >
+                Delete Favorites
+              </Button>
             </Card.Body>
           </Card>
         </Col>
@@ -153,7 +205,7 @@ const Story = () => {
                   </Table>
                 </Card.Body>
               </Accordion.Collapse>
-            </Card>            
+            </Card>
           </Accordion>
         </Col>
       </Row>
