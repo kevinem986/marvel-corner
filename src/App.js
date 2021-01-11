@@ -1,12 +1,9 @@
 import React from "react";
-// import { Switch, Route } from "react-router-dom";
-// import Home from "./containers/Home";
 
 import { Row, Col, Container } from "react-bootstrap";
 import { HeaderNavbar, Content } from "./components";
 
 function App() {  
-
   return (
     <Container fluid={true}>
       <Row>

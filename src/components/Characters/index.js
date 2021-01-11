@@ -1,120 +1,162 @@
-import React from "react";
-import { Row, Col, Container, Pagination  } from "react-bootstrap";
-import Table from 'react-bootstrap/Table';
-import gql from 'graphql-tag';
-import { useQuery } from '@apollo/react-hooks';
-import { useHistory } from 'react-router-dom';
-import Spinner from 'react-bootstrap/Spinner';
-import Image from 'react-bootstrap/Image';
-import useUrlQuery from "../../useUrlQuery";
+import React, { useState, useEffect } from "react";
+import { Row, Col, Container } from "react-bootstrap";
+import Table from "react-bootstrap/Table";
+import gql from "graphql-tag";
+import { useQuery } from "@apollo/react-hooks";
+import Spinner from "react-bootstrap/Spinner";
+import Image from "react-bootstrap/Image";
+import DropdownButton from "react-bootstrap/DropdownButton";
+import Dropdown from "react-bootstrap/Dropdown";
+import InfiniteScroll from "react-infinite-scroll-component";
 
-const characters = gql`
-    query getCharacters($page: Int, $limit: Int) {
-        characters (filter: {}, desc: false, pagination: { offset: $page, limit: $limit }) {
-            total
-            limit
-            count
-            results {
-                id
-                name
-                description
-                thumbnail
-                resourceURI
-            }
-        }
-}`
+const getCharacters = gql`
+  query getCharacters($offset: Int, $limit: Int, $orderDesc: Boolean) {
+    characters(
+      filter: {}
+      desc: $orderDesc
+      pagination: { offset: $offset, limit: $limit }
+    ) {
+      total
+      limit
+      count
+      results {
+        id
+        name
+        description
+        thumbnail
+        resourceURI
+      }
+    }
+  }
+`;
+
+const LIMIT = 5;
 
 const Characters = () => {
-  const history = useHistory();
-  const urlQuery = useUrlQuery();
-  const page = parseInt(urlQuery.get("p") || 0);
-  const { loading , error, data } = useQuery(characters, {
-      variables: { page, limit: 5}
-  }); 
+  const [orderByNameDesc, setOrderByNameDesc] = useState(false);
+  useEffect(() => {}, [orderByNameDesc]);
+
+  const { loading, error, data, fetchMore } = useQuery(getCharacters, {
+    variables: { limit: LIMIT, orderDesc: orderByNameDesc },
+  });
+
+  const characters = data?.characters?.results || [];
+
+  const loadMore = () => {
+    fetchMore({
+      variables: {
+        offset: characters.length,
+        limit: LIMIT,
+        orderDesc: orderByNameDesc
+      },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+
+        const prevCharacters = prev?.characters?.results || [];
+        const newCharacters = fetchMoreResult?.characters?.results || [];
+
+        const newData = {
+          characters: {
+            ...fetchMoreResult.characters,
+            results: [...prevCharacters, ...newCharacters],
+          },
+        };
+
+        return newData;
+      },
+    });
+  };  
 
   if (loading) return <Spinner animation="border" />;
   if (error) return `Error! ${error.message}`;
 
-  console.log(data);
+  const handleSelect = (e) => {
+    let value = e === "DESC" ? true : false;
+    setOrderByNameDesc(value);
+  };
 
-  const paginationItems = () => {
-      const items = [];
-
-      for (let number = 0; number <= data.characters.count; number++){
-          items.push(
-              <Pagination.Item
-              key={number}
-              active={number===page}
-              onClick={() => history.push(`/characters?p=${number}`)}>
-                  {number}
-              </Pagination.Item>
-          );
-      }
-
-      return items;
-  }
-
-  let columnModel = [ 
+  let columnModel = [
     {
-      field: 'id',
-      header: 'ID'
+      field: "id",
+      header: "ID",
     },
     {
-      field: 'thumbnail',
-      header: 'Thumbnail'
+      field: "thumbnail",
+      header: "Thumbnail",
     },
     {
-    field: 'name',
-    header: 'Name'
+      field: "name",
+      header: "Name",
     },
     {
-      field: 'description',
-      header: 'Description'
-    }];
+      field: "description",
+      header: "Description",
+    },
+  ];
 
   return (
     <Container fluid={true}>
-    <Row>
+      <Row>
         <Col md="12" xs="12">
-            <h4>Characters</h4>
+          <h4>Characters</h4>
         </Col>
-    </Row>
-    <Row>
-    <Table striped bordered hover variant="ligth">
-        <thead>
-            <tr className="bg-info text-center">
-                { columnModel.map((col, i) => {
-                    return [            
-                    <th key={i} >{col.header}</th>   
-                    ]
-                }) }
-            </tr>  
-        </thead>
-        <tbody>
-            {
-                data?.characters?.results?.map((rowData, index) => {
+      </Row>
+      <Row>
+        <Col md="4" xs="4">
+          <div>
+            <DropdownButton
+              id="dropdown-basic-button"
+              title="Order by Name"
+              onSelect={handleSelect}
+            >
+              <Dropdown.Item eventKey="ASC">ASC</Dropdown.Item>
+              <Dropdown.Item eventKey="DESC">DESC</Dropdown.Item>
+            </DropdownButton>
+          </div>
+        </Col>
+      </Row>
+      <Row>
+        <InfiniteScroll
+          dataLength={characters.length}
+          next={loadMore}
+          hasMore={characters?.length < data?.characters?.total}
+          loader={<Spinner animation="border" />}
+          height={500}
+        >
+          <Table striped bordered hover variant="ligth">
+            <thead>
+              <tr className="bg-info text-center">
+                {columnModel.map((col, i) => {
+                  return [<th key={i}>{col.header}</th>];
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {characters.map((rowData, index) => {
                 return [
-                <tr key={index}>
-                    { 
-                      columnModel.map((col, i) => {
-                        return [            
-                            <td key={i}> 
-                                { col.field === 'thumbnail' ? <Image height="150px" width="150px" src={rowData[col.field]} thumbnail /> : rowData[col.field] } 
-                            </td>   
-                        ]
-                      }) 
-                    }
-                </tr>
-                ]
-                })
-            }
-        </tbody>
-        </Table>
-    </Row>
-    <Row className="justify-content-center">
-        <Pagination>
-            {paginationItems()}
-        </Pagination>
+                  <tr key={index}>
+                    {columnModel.map((col, i) => {
+                      return [
+                        <td key={i}>
+                          {col.field === "thumbnail" ? (
+                            <Image
+                              height="150px"
+                              width="150px"
+                              src={rowData[col.field]}
+                              thumbnail
+                            />
+                          ) : (
+                            rowData[col.field]
+                          )}
+                        </td>,
+                      ];
+                    })}
+                  </tr>,
+                ];
+              })}
+            </tbody>
+          </Table>
+        </InfiniteScroll>
       </Row>
     </Container>
   );
