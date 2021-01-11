@@ -47,7 +47,7 @@ const Story = () => {
       if (index >= 0) setFavorite(true);
       else setFavorite(false);
     }
-  }, []);
+  }, [id]);
 
   const { loading, error, data } = useQuery(getStory, {
     variables: { id: id },

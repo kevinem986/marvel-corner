@@ -89,7 +89,7 @@ const Favorites = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {storageCharacters.map((rowData, index) => {
+                      {storageCharacters?.map((rowData, index) => {
                         return [
                           <tr key={index}>
                             {columnModelCharacters.map((col, i) => {
@@ -145,7 +145,7 @@ const Favorites = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {storageComics.map((rowData, index) => {
+                      {storageComics?.map((rowData, index) => {
                         return [
                           <tr key={index}>
                             {columnModelComics.map((col, i) => {
@@ -199,7 +199,7 @@ const Favorites = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {storageStories.map((rowData, index) => {
+                      {storageStories?.map((rowData, index) => {
                         return [
                           <tr key={index}>
                             {columnModelStories.map((col, i) => {

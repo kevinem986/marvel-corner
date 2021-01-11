@@ -44,7 +44,7 @@ const Character = () => {
   let { id } = useParams();
   const [favorite, setFavorite] = useState(false);
 
-  useEffect(() => {
+  useEffect(() => {    
     let currentStorage = JSON.parse(localStorage.getItem("favoriteCharacters"));
 
     if (currentStorage != null && currentStorage.length > 0) {
@@ -53,7 +53,7 @@ const Character = () => {
       if (index >= 0) setFavorite(true);
       else setFavorite(false);
     }
-  }, []);
+  }, [id]);
 
   const { loading, error, data } = useQuery(getCharacter, {
     variables: { id: id },

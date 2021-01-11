@@ -54,7 +54,7 @@ const Comic = () => {
       if (index >= 0) setFavorite(true);
       else setFavorite(false);
     }
-  }, []);
+  }, [id]);
 
   const { loading, error, data } = useQuery(getComic, {
     variables: { id: id },
