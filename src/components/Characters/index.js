@@ -8,6 +8,7 @@ import Image from "react-bootstrap/Image";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import InfiniteScroll from "react-infinite-scroll-component";
+import { Link } from "react-router-dom";
 
 const getCharacters = gql`
   query getCharacters($offset: Int, $limit: Int, $orderDesc: Boolean) {
@@ -31,7 +32,8 @@ const getCharacters = gql`
 `;
 
 const LIMIT = 5;
-const imageNotFound = "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
+const imageNotFound =
+  "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
 
 const Characters = () => {
   const [orderByNameDesc, setOrderByNameDesc] = useState(false);
@@ -48,7 +50,7 @@ const Characters = () => {
       variables: {
         offset: characters.length,
         limit: LIMIT,
-        orderDesc: orderByNameDesc
+        orderDesc: orderByNameDesc,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
@@ -66,7 +68,7 @@ const Characters = () => {
         return newData;
       },
     });
-  };  
+  };
 
   if (loading) return <Spinner animation="border" />;
   if (error) return `Error! ${error.message}`;
@@ -139,11 +141,21 @@ const Characters = () => {
                     {columnModel.map((col, i) => {
                       return [
                         <td key={i}>
-                          {col.field === "thumbnail" ? (
+                          {/* When field is id (col) redirect to detail */}
+                          {col.field === "id" ? (
+                            <Link to={"/character/" + rowData[col.field]}>
+                              {rowData[col.field]}
+                            </Link>
+                          ) : // When field is thumbnail set the image (thumbnail) to td
+                          col.field === "thumbnail" ? (
                             <Image
                               height="150px"
                               width="150px"
-                              src={rowData[col.field] === "" ? imageNotFound : rowData[col.field]}
+                              src={
+                                rowData[col.field] === ""
+                                  ? imageNotFound
+                                  : rowData[col.field]
+                              }
                               thumbnail
                             />
                           ) : (
