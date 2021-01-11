@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Row, Col, Container } from "react-bootstrap";
 import gql from "graphql-tag";
@@ -42,6 +42,18 @@ const imageNotFound =
 
 const Character = () => {
   let { id } = useParams();
+  const [favorite, setFavorite] = useState(false);
+
+  useEffect(() => {
+    let currentStorage = JSON.parse(localStorage.getItem("favoriteCharacters"));
+
+    if (currentStorage != null && currentStorage.length > 0) {
+      const index = currentStorage.findIndex((x) => x.id === id);
+
+      if (index >= 0) setFavorite(true);
+      else setFavorite(false);
+    }
+  }, []);
 
   const { loading, error, data } = useQuery(getCharacter, {
     variables: { id: id },
@@ -95,6 +107,35 @@ const Character = () => {
     },
   ];
 
+  const onClickBtn = (e) => {
+    setFavorite(e);
+
+    let newStorage = [];
+    let characterArray = {};
+
+    characterArray.id = id;
+    characterArray.name = data?.character?.name;
+    characterArray.thumbnail =
+      data?.character?.thumbnail === ""
+        ? imageNotFound
+        : data?.character?.thumbnail;
+
+    let currentStorage = JSON.parse(localStorage.getItem("favoriteCharacters"));
+
+    if (currentStorage != null && currentStorage.length > 0) {
+      const index = currentStorage.findIndex((x) => x.id === id);
+
+      if (index >= 0) currentStorage.splice(index, 1);
+
+      if (e === true) currentStorage.push(characterArray);
+
+      newStorage = currentStorage;
+    } else if (e === true) newStorage.push(characterArray);
+
+    localStorage.removeItem("favoriteCharacters");
+    localStorage.setItem("favoriteCharacters", JSON.stringify(newStorage));
+  };
+
   return (
     <Container fluid={true}>
       <Row>
@@ -116,7 +157,20 @@ const Character = () => {
             <Card.Body>
               <Card.Title>{data?.character?.name}</Card.Title>
               <Card.Text>{data?.character?.description}</Card.Text>
-              <Button variant="danger">Add Favorites</Button>
+              <Button
+                variant="danger"
+                onClick={() => onClickBtn(true)}
+                hidden={favorite}
+              >
+                Add Favorites
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => onClickBtn(false)}
+                hidden={!favorite}
+              >
+                Delete Favorites
+              </Button>
             </Card.Body>
           </Card>
         </Col>
@@ -125,7 +179,7 @@ const Character = () => {
             <Card>
               <Card.Header>
                 <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                  Related Comic:
+                  Related Comics:
                 </Accordion.Toggle>
               </Card.Header>
               <Accordion.Collapse eventKey="0">

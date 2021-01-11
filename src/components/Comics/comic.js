@@ -118,7 +118,7 @@ const Comic = () => {
             <Card>
               <Card.Header>
                 <Accordion.Toggle as={Button} variant="link" eventKey="0">
-                  Related Character:
+                  Related Characters:
                 </Accordion.Toggle>
               </Card.Header>
               <Accordion.Collapse eventKey="0">
