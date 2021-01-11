@@ -111,11 +111,11 @@ const Character = () => {
     setFavorite(e);
 
     let newStorage = [];
-    let characterArray = {};
+    let newArrayStorage = {};
 
-    characterArray.id = id;
-    characterArray.name = data?.character?.name;
-    characterArray.thumbnail =
+    newArrayStorage.id = id;
+    newArrayStorage.name = data?.character?.name;
+    newArrayStorage.thumbnail =
       data?.character?.thumbnail === ""
         ? imageNotFound
         : data?.character?.thumbnail;
@@ -127,10 +127,10 @@ const Character = () => {
 
       if (index >= 0) currentStorage.splice(index, 1);
 
-      if (e === true) currentStorage.push(characterArray);
+      if (e === true) currentStorage.push(newArrayStorage);
 
       newStorage = currentStorage;
-    } else if (e === true) newStorage.push(characterArray);
+    } else if (e === true) newStorage.push(newArrayStorage);
 
     localStorage.removeItem("favoriteCharacters");
     localStorage.setItem("favoriteCharacters", JSON.stringify(newStorage));
