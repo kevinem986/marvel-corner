@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Row, Col, Container } from "react-bootstrap";
 import Table from "react-bootstrap/Table";
 import gql from "graphql-tag";
@@ -9,9 +9,11 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import Dropdown from "react-bootstrap/Dropdown";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { Link } from "react-router-dom";
+import InputGroup from "react-bootstrap/InputGroup";
+import FormControl from "react-bootstrap/FormControl";
 
 const getComics = gql`
-  query getComics($offset: Int, $limit: Int) {
+  query getComics($offset: Int, $limit: Int, $filterByTitle: String) {
     __type(name: "ComicSort") {
       name
       enumValues {
@@ -20,7 +22,7 @@ const getComics = gql`
     }
 
     comics(
-      filter: {}
+      filter: { titleStartsWith: $filterByTitle }
       orderBy: ISSUE_NUMBER
       pagination: { offset: $offset, limit: $limit }
     ) {
@@ -42,21 +44,39 @@ const getComics = gql`
 `;
 
 const LIMIT = 5;
-const imageNotFound = "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
+const imageNotFound =
+  "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
 
 const Comics = () => {
+  const [inputTitle, setInputTitle] = useState("");
+  let variables = { limit: LIMIT };
+
+  useEffect(() => {}, [inputTitle]);
+
+  if (inputTitle !== "")
+    variables = {
+      limit: LIMIT,
+      filterByTitle: inputTitle,
+    };
+  else variables = { limit: LIMIT };
+
   const { loading, error, data, fetchMore } = useQuery(getComics, {
-    variables: { limit: LIMIT },
+    variables: variables,
   });
 
   const comics = data?.comics?.results || [];
 
   const loadMore = () => {
-    fetchMore({
-      variables: {
+    if (inputTitle !== "")
+      variables = {
         offset: comics.length,
         limit: LIMIT,
-      },
+        filterByTitle: inputTitle,
+      };
+    else variables = { offset: comics.length, limit: LIMIT };
+
+    fetchMore({
+      variables: variables,
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
 
@@ -117,7 +137,7 @@ const Comics = () => {
         </Col>
       </Row>
       <Row>
-        <Col md="4" xs="4">
+        <Col md="2" xs="2">
           <div>
             <DropdownButton
               id="dropdown-basic-button"
@@ -127,6 +147,22 @@ const Comics = () => {
               <Dropdown.Item eventKey="ASC">Issue Number</Dropdown.Item>
             </DropdownButton>
           </div>
+        </Col>
+        <Col md="4" xs="4">
+          <InputGroup className="mb-3">
+            <InputGroup.Append>
+              <InputGroup.Text id="basic-addon2">
+                Search by Title
+              </InputGroup.Text>
+            </InputGroup.Append>
+            <FormControl
+              placeholder="Enter the Title"
+              aria-label="Enter the title"
+              aria-describedby="basic-addon2"
+              value={inputTitle}
+              onChange={(e) => setInputTitle(e.target.value)}
+            />
+          </InputGroup>
         </Col>
       </Row>
       <Row>
