@@ -31,6 +31,7 @@ const getCharacters = gql`
 `;
 
 const LIMIT = 5;
+const imageNotFound = "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
 
 const Characters = () => {
   const [orderByNameDesc, setOrderByNameDesc] = useState(false);
@@ -142,7 +143,7 @@ const Characters = () => {
                             <Image
                               height="150px"
                               width="150px"
-                              src={rowData[col.field]}
+                              src={rowData[col.field] === "" ? imageNotFound : rowData[col.field]}
                               thumbnail
                             />
                           ) : (

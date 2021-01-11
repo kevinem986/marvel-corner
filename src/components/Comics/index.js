@@ -12,32 +12,36 @@ import InfiniteScroll from "react-infinite-scroll-component";
 const getComics = gql`
   query getComics($offset: Int, $limit: Int) {
     __type(name: "ComicSort") {
-    name
-    enumValues {
       name
+      enumValues {
+        name
+      }
     }
-  }
-  
-  comics (filter: {}, orderBy: , ISSUE_NUMBER, pagination: { offset: $offset, limit: $limit }) {
-    offset
-    total
-    limit
-    count
-    results
-    {
-      id
-      title
-      description
-      resourceURI
-      thumbnail
-      issueNumber
-      format
+
+    comics(
+      filter: {}
+      orderBy: ISSUE_NUMBER
+      pagination: { offset: $offset, limit: $limit }
+    ) {
+      offset
+      total
+      limit
+      count
+      results {
+        id
+        title
+        description
+        resourceURI
+        thumbnail
+        issueNumber
+        format
+      }
     }
-  }
   }
 `;
 
 const LIMIT = 5;
+const imageNotFound = "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg";
 
 const Comics = () => {
   const { loading, error, data, fetchMore } = useQuery(getComics, {
@@ -50,7 +54,7 @@ const Comics = () => {
     fetchMore({
       variables: {
         offset: comics.length,
-        limit: LIMIT
+        limit: LIMIT,
       },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
@@ -68,13 +72,13 @@ const Comics = () => {
         return newData;
       },
     });
-  };  
+  };
 
   if (loading) return <Spinner animation="border" />;
   if (error) return `Error! ${error.message}`;
 
   const handleSelect = (e) => {
-    alert('Already ordering by issue number.');
+    alert("Already ordering by issue number.");
   };
 
   let columnModel = [
@@ -85,10 +89,6 @@ const Comics = () => {
     {
       field: "thumbnail",
       header: "Thumbnail",
-    },
-    {
-      field: "id",
-      header: "ID",
     },
     {
       field: "title",
@@ -105,7 +105,7 @@ const Comics = () => {
     {
       field: "format",
       header: "Format",
-    }
+    },
   ];
 
   return (
@@ -155,7 +155,7 @@ const Comics = () => {
                             <Image
                               height="150px"
                               width="150px"
-                              src={rowData[col.field]}
+                              src={rowData[col.field] === "" ? imageNotFound : rowData[col.field]}
                               thumbnail
                             />
                           ) : (
